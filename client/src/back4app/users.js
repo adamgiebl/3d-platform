@@ -1,14 +1,14 @@
 import Parse from 'parse';
 
-export const addUser = async (name, email, bio) => {
+export const addUser = async (name, email, password) => {
     try {
         const User = new Parse.Object('User');
-        User.set('Name', name);
-        User.set('Email', email);
-        User.set('Bio', bio);
+        User.set('name', name);
+        User.set('email', email);
+        User.set('password', password);
         await User.save();
-        console.log('User saved');
+        console.log('User saved!');
     } catch (error) {
         console.log('Error saving new user: ', error);
     }
-}
+};
