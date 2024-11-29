@@ -5,11 +5,19 @@ import GlobalStyle from "./styles/GlobalStyle";
 import { AuthProvider } from "./context/AuthContext";
 import { PostProvider } from "./context/PostContext";
 
+
 // Import pages (we'll create these next)
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Parse from "parse";
+
+const appId = 'Jn2nFHOhB493ymQJuBrN75XlQyjd1NvIbpULEnsp';
+const serverURL = 'https://parseapi.back4app.com/';
+const javascriptKey = 'wJk6F64XHBPRN7Qc1udFlcxBbOcw8UAUCilVXFYC';
+Parse.initialize(appId, javascriptKey);
+Parse.serverURL = serverURL;
 
 function App() {
   return (
