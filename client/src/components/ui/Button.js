@@ -12,7 +12,7 @@ const Button = styled.button`
     variant === "primary" &&
     css`
       background: ${({ theme }) => theme.colors.primary};
-      color: ${({ theme }) => theme.colors.text};
+      color: ${({ theme }) => theme.colors.background};
 
       &:hover {
         background: ${({ theme }) => theme.colors.secondary};

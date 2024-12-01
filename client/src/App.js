@@ -5,7 +5,7 @@ import GlobalStyle from "./styles/GlobalStyle";
 import { AuthProvider } from "./context/AuthContext";
 import { PostProvider } from "./context/PostContext";
 
-// Import pages (we'll create these next)
+// Import pages
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";

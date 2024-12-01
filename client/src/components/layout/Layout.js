@@ -1,7 +1,11 @@
 import styled from "styled-components";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
+import Modal from "../ui/Modal";
+import CreatePost from "../post/CreatePost";
+import { usePosts } from "../../context/PostContext";
 
 const LayoutWrapper = styled.div`
   min-height: 100vh;
@@ -25,6 +29,7 @@ const Logo = styled(Link)`
   font-size: 1.5rem;
   font-weight: bold;
   color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
 `;
 
 const NavLinks = styled.div`
@@ -42,10 +47,17 @@ const MainContent = styled.main`
 function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { createPost } = usePosts();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate("/login");
+  };
+
+  const handleCreatePost = (postData) => {
+    createPost(postData);
+    setIsCreateModalOpen(false);
   };
 
   return (
@@ -58,6 +70,12 @@ function Layout({ children }) {
               <>
                 <Link to="/">Home</Link>
                 <Link to={`/profile/${user.id}`}>Profile</Link>
+                <Button
+                  variant="primary"
+                  onClick={() => setIsCreateModalOpen(true)}
+                >
+                  Create Post
+                </Button>
                 <Button variant="secondary" onClick={handleLogout}>
                   Logout
                 </Button>
@@ -76,6 +94,13 @@ function Layout({ children }) {
         </Nav>
       </Header>
       <MainContent>{children}</MainContent>
+
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      >
+        <CreatePost onSubmit={handleCreatePost} />
+      </Modal>
     </LayoutWrapper>
   );
 }

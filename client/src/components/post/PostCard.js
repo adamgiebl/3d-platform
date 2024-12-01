@@ -49,7 +49,7 @@ const TagList = styled.div`
 
 const Tag = styled.span`
   background: ${({ theme }) => theme.colors.primary}20;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.textSecondary};
   padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   font-size: 0.875rem;

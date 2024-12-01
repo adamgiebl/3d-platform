@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { mockImages } from "../utils/mockData";
 import { mockPosts } from "../context/data";
 import ModelViewer from "../components/3d/ModelViewer";
+import Button from "../components/ui/Button";
 
 const ProfileHeader = styled.div`
   display: flex;
@@ -67,10 +68,15 @@ const ModelContainer = styled.div`
   margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
+const ProfileActions = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.md};
+`;
+
 function Profile() {
   const { id } = useParams();
   const { user } = useAuth();
   const [userPosts, setUserPosts] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
     // Simulate fetching user's posts
@@ -80,6 +86,17 @@ function Profile() {
     console.table(fetchedPosts, ["id", "title", "author.name"]);
     setUserPosts(fetchedPosts);
   }, [id, user?.id]);
+
+  const handleFollowToggle = () => {
+    setIsFollowing(!isFollowing);
+    console.table({
+      action: isFollowing ? "Unfollowing" : "Following",
+      userId: id,
+      currentUser: user?.id,
+    });
+  };
+
+  const isOwnProfile = id === user?.id;
 
   return (
     <Layout>
@@ -93,6 +110,16 @@ function Profile() {
             <span>Followers: 120</span>
             <span>Following: 85</span>
           </Stats>
+          {!isOwnProfile && user && (
+            <ProfileActions>
+              <Button
+                variant={isFollowing ? "secondary" : "primary"}
+                onClick={handleFollowToggle}
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
+              </Button>
+            </ProfileActions>
+          )}
         </ProfileInfo>
       </ProfileHeader>
 

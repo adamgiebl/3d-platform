@@ -3,8 +3,8 @@ import Layout from "../components/layout/Layout";
 import { useAuth } from "../context/AuthContext";
 import { usePosts } from "../context/PostContext";
 import PostCard from "../components/post/PostCard";
-import CreatePost from "../components/post/CreatePost";
 import { mockImages } from "../utils/mockData";
+import { Link } from "react-router-dom";
 
 const HomeLayout = styled.div`
   display: grid;
@@ -49,13 +49,15 @@ const CreatorList = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const Creator = styled.div`
+const Creator = styled(Link)`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
   padding: ${({ theme }) => theme.spacing.sm};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   transition: background 0.2s;
+  text-decoration: none;
+  color: inherit;
 
   &:hover {
     background: ${({ theme }) => theme.colors.background};
@@ -71,6 +73,10 @@ const CreatorAvatar = styled.img`
 
 const CreatorInfo = styled.div`
   flex: 1;
+
+  small {
+    color: ${({ theme }) => theme.colors.textSecondary};
+  }
 `;
 
 const CategoryList = styled.div`
@@ -116,13 +122,11 @@ const mockCategories = [
 ];
 
 function Home() {
-  const { posts, toggleLike, addComment, createPost } = usePosts();
+  const { posts, toggleLike, addComment } = usePosts();
   const { user } = useAuth();
 
   return (
     <Layout>
-      {user && <CreatePost onSubmit={createPost} />}
-
       <HomeLayout>
         <FeedWrapper>
           {posts.map((post) => (
@@ -140,13 +144,11 @@ function Home() {
             <SectionTitle>Creators</SectionTitle>
             <CreatorList>
               {mockCreators.map((creator) => (
-                <Creator key={creator.id}>
+                <Creator key={creator.id} to={`/profile/${creator.id}`}>
                   <CreatorAvatar src={creator.avatar} alt={creator.name} />
                   <CreatorInfo>
                     <div>{creator.name}</div>
-                    <small style={{ color: "var(--text-secondary)" }}>
-                      {creator.followers} followers
-                    </small>
+                    <small>{creator.followers} followers</small>
                   </CreatorInfo>
                 </Creator>
               ))}

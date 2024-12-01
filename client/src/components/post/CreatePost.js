@@ -49,7 +49,6 @@ function CreatePost({ onSubmit }) {
     description: "",
     tags: "",
     modelFile: null,
-    previewImage: null,
   });
 
   const handleSubmit = (e) => {
@@ -59,7 +58,6 @@ function CreatePost({ onSubmit }) {
       action: "Creating post",
       ...formData,
       modelFile: formData.modelFile?.name,
-      previewImage: formData.previewImage?.name,
     });
 
     onSubmit({
@@ -77,7 +75,6 @@ function CreatePost({ onSubmit }) {
       description: "",
       tags: "",
       modelFile: null,
-      previewImage: null,
     });
   };
 
@@ -128,21 +125,6 @@ function CreatePost({ onSubmit }) {
             setFormData((prev) => ({ ...prev, modelFile: e.target.files[0] }))
           }
           accept=".glb,.gltf,.obj"
-          required
-        />
-      </FormGroup>
-
-      <FormGroup>
-        <Label>Preview Image</Label>
-        <Input
-          type="file"
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              previewImage: e.target.files[0],
-            }))
-          }
-          accept="image/*"
           required
         />
       </FormGroup>
