@@ -11,6 +11,7 @@ export function PostProvider({ children }) {
       action: "Creating new post",
       title: postData.title,
       description: postData.description,
+
     });
 
     const newPost = {
