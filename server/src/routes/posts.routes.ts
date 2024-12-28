@@ -14,9 +14,10 @@ router.post("/", async (req, res) => {
     post.set("description", description);
     post.set("tags", tags);
     post.set("modelUrl", modelUrl);
-    post.set("user", Parse.User.current());
+    post.set("author", Parse.User.current());
 
     const result = await post.save();
+
     console.table({
       Action: "Create Post",
       Title: title,
@@ -24,9 +25,21 @@ router.post("/", async (req, res) => {
       Status: "Success",
     });
 
-    res
-      .status(201)
-      .json({ message: "Post created successfully", postId: result.id });
+    res.status(201).json({
+      id: result.id,
+      title: result.get("title"),
+      description: result.get("description"),
+      modelUrl: result.get("modelUrl"),
+      tags: result.get("tags"),
+      likes: 0,
+      comments: [],
+      author: {
+        id: result.get("author").id,
+        name: result.get("author").get("username"),
+        avatar: result.get("author").get("avatar"),
+      },
+      createdAt: result.get("createdAt"),
+    });
   } catch (error) {
     console.error("Post Creation Error:", error);
     res.status(400).json({ error: error.message });
@@ -39,17 +52,38 @@ router.get("/", async (req, res) => {
     const { page = 1, limit = 10, category } = req.query;
     const query = new Parse.Query("Post");
 
+    console.log(query);
+
     if (category) {
       query.equalTo("tags", category);
     }
 
     query.skip((Number(page) - 1) * Number(limit));
     query.limit(Number(limit));
-    query.include("user");
+    query.include("author");
     query.descending("createdAt");
 
     const posts = await query.find();
-    res.json({ posts });
+
+    console.dir(posts[0]);
+
+    const formattedPosts = posts.map((post) => ({
+      id: post.id,
+      title: post.get("title"),
+      description: post.get("description"),
+      modelUrl: post.get("modelUrl"),
+      tags: post.get("tags"),
+      likes: post.get("likes") || 0,
+      comments: post.get("comments") || [],
+      author: {
+        id: post.get("author").id,
+        name: post.get("author").get("username"),
+        avatar: post.get("author").get("avatar"),
+      },
+      createdAt: post.get("createdAt"),
+    }));
+
+    res.json({ posts: formattedPosts });
   } catch (error) {
     console.error("Feed Fetch Error:", error);
     res.status(500).json({ error: error.message });
@@ -69,6 +103,9 @@ router.post("/:postId/like", async (req, res) => {
     like.set("user", Parse.User.current());
 
     await like.save();
+
+    post.increment("likes");
+    await post.save();
 
     console.table({
       Action: "Like Post",
@@ -97,9 +134,23 @@ router.post("/:postId/comments", async (req, res) => {
     const comment = new Comment();
     comment.set("content", content);
     comment.set("post", post);
-    comment.set("user", Parse.User.current());
+    comment.set("author", Parse.User.current());
 
     const result = await comment.save();
+
+    post.add("comments", comment);
+    await post.save();
+
+    const commentData = {
+      id: result.id,
+      content: result.get("content"),
+      author: {
+        id: result.get("author").id,
+        name: result.get("author").get("username"),
+        avatar: result.get("author").get("avatar"),
+      },
+      createdAt: result.get("createdAt"),
+    };
 
     console.table({
       Action: "Add Comment",
@@ -108,9 +159,7 @@ router.post("/:postId/comments", async (req, res) => {
       Status: "Success",
     });
 
-    res
-      .status(201)
-      .json({ message: "Comment added successfully", commentId: result.id });
+    res.status(201).json(commentData);
   } catch (error) {
     console.error("Comment Error:", error);
     res.status(400).json({ error: error.message });

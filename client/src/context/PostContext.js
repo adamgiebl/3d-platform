@@ -1,73 +1,119 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { mockPosts } from "./data";
+import {
+  createPost as apiCreatePost,
+  fetchPosts as apiFetchPosts,
+  likePost as apiLikePost,
+  addComment as apiAddComment,
+} from "../api/posts";
 
 const PostContext = createContext();
 
 export function PostProvider({ children }) {
-  const [posts, setPosts] = useState(mockPosts);
+  const [posts, setPosts] = useState([...mockPosts]);
 
-  const createPost = (postData) => {
-    console.table({
-      action: "Creating new post",
-      title: postData.title,
-      description: postData.description,
+  useEffect(() => {
+    loadPosts();
+  }, []);
 
-    });
-
-    const newPost = {
-      id: posts.length + 1,
-      ...postData,
-      likes: 0,
-      comments: [],
-      createdAt: new Date().toISOString(),
-    };
-
-    setPosts((prevPosts) => [newPost, ...prevPosts]);
-    return newPost;
+  const loadPosts = async () => {
+    try {
+      const fetchedPosts = await apiFetchPosts();
+      setPosts([...fetchedPosts, ...mockPosts]);
+    } catch (error) {
+      console.error("Error loading posts:", error);
+      setPosts([...mockPosts]);
+    }
   };
 
-  // Like/Unlike a post
-  const toggleLike = (postId) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, likes: post.likes + 1 } : post
-      )
-    );
+  const createPost = async (postData) => {
+    try {
+      const newPost = await apiCreatePost(postData);
+      setPosts((prevPosts) => [newPost, ...prevPosts]);
+      return newPost;
+    } catch (error) {
+      console.error("Error creating post:", error);
+      const mockNewPost = {
+        id: posts.length + 1,
+        ...postData,
+        likes: 0,
+        comments: [],
+        createdAt: new Date().toISOString(),
+      };
+      setPosts((prevPosts) => [mockNewPost, ...prevPosts]);
+      return mockNewPost;
+    }
   };
 
-  // Add a comment to a post
-  const addComment = (postId, comment) => {
-    console.table({
-      action: "Adding comment",
-      postId,
-      comment: comment.content,
-    });
+  const toggleLike = async (postId) => {
+    try {
+      const success = await apiLikePost(postId);
+      if (success) {
+        setPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post.id === postId ? { ...post, likes: post.likes + 1 } : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error liking post:", error);
 
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              comments: [
-                ...post.comments,
-                {
-                  id: post.comments.length + 1,
-                  ...comment,
-                  createdAt: new Date().toISOString(),
-                },
-              ],
-            }
-          : post
-      )
-    );
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId ? { ...post, likes: post.likes + 1 } : post
+        )
+      );
+    }
   };
 
-  // Get posts by user ID
+  const addComment = async (postId, comment) => {
+    try {
+      const newComment = await apiAddComment(postId, comment.content);
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                comments: [
+                  ...post.comments,
+                  {
+                    id: newComment.id,
+                    content: comment.content,
+                    author: comment.author,
+                    createdAt: newComment.createdAt,
+                  },
+                ],
+              }
+            : post
+        )
+      );
+    } catch (error) {
+      console.error("Error adding comment:", error);
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                comments: [
+                  ...post.comments,
+                  {
+                    id: post.comments.length + 1,
+                    ...comment,
+                    createdAt: new Date().toISOString(),
+                  },
+                ],
+              }
+            : post
+        )
+      );
+    }
+  };
+
   const getPostsByUser = (userId) => {
     return posts.filter((post) => post.author.id === userId);
   };
 
-  // Get posts by tag
   const getPostsByTag = (tag) => {
     return posts.filter((post) => post.tags.includes(tag));
   };

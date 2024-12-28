@@ -42,40 +42,69 @@ const TagInput = styled(Input)`
   margin-bottom: ${({ theme }) => theme.spacing.sm};
 `;
 
+const ErrorMessage = styled.div`
+  color: ${({ theme }) => theme.colors.error};
+  font-size: 0.875rem;
+  margin-top: ${({ theme }) => theme.spacing.xs};
+`;
+
 function CreatePost({ onSubmit }) {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     tags: "",
-    modelFile: null,
+    modelFile: "",
   });
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
-    console.table({
-      action: "Creating post",
-      ...formData,
-      modelFile: formData.modelFile?.name,
-    });
+    try {
+      await onSubmit({
+        ...formData,
+        author: {
+          id: user.id,
+          name: user.name,
+          avatar: user.avatar,
+        },
+        tags: formData.tags.split(",").map((tag) => tag.trim()),
+      });
 
-    onSubmit({
-      ...formData,
-      author: {
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-      },
-      tags: formData.tags.split(",").map((tag) => tag.trim()),
-    });
+      setFormData({
+        title: "",
+        description: "",
+        tags: "",
+        modelFile: "",
+      });
+    } catch (error) {
+      setError(error.message || "Failed to create post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    setFormData({
-      title: "",
-      description: "",
-      tags: "",
-      modelFile: null,
-    });
+  const validateUrl = (url) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleModelUrlChange = (e) => {
+    const url = e.target.value;
+    if (url && !validateUrl(url)) {
+      setError("Please enter a valid URL for the 3D model");
+    } else {
+      setError("");
+    }
+    setFormData((prev) => ({ ...prev, modelFile: url }));
   };
 
   return (
@@ -118,18 +147,20 @@ function CreatePost({ onSubmit }) {
       </FormGroup>
 
       <FormGroup>
-        <Label>3D Model</Label>
+        <Label>3D Model URL</Label>
         <Input
-          type="file"
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, modelFile: e.target.files[0] }))
-          }
-          accept=".glb,.gltf,.obj"
+          type="url"
+          value={formData.modelFile}
+          onChange={handleModelUrlChange}
+          placeholder="Enter URL to your 3D model (GLB, GLTF, or OBJ format)"
           required
         />
+        {error && <ErrorMessage>{error}</ErrorMessage>}
       </FormGroup>
 
-      <Button type="submit">Create Post</Button>
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Creating..." : "Create Post"}
+      </Button>
     </Form>
   );
 }
