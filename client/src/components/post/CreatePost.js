@@ -38,10 +38,6 @@ const TextArea = styled.textarea`
   }
 `;
 
-const TagInput = styled(Input)`
-  margin-bottom: ${({ theme }) => theme.spacing.sm};
-`;
-
 const ErrorMessage = styled.div`
   color: ${({ theme }) => theme.colors.error};
   font-size: 0.875rem;
@@ -49,12 +45,11 @@ const ErrorMessage = styled.div`
 `;
 
 function CreatePost({ onSubmit }) {
-  const { user } = useAuth();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    tags: "",
-    modelFile: "",
+    modelUrl:
+      "https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf",
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,21 +60,15 @@ function CreatePost({ onSubmit }) {
     setIsSubmitting(true);
 
     try {
+      console.log("submitting formdata", formData);
       await onSubmit({
         ...formData,
-        author: {
-          id: user.id,
-          name: user.name,
-          avatar: user.avatar,
-        },
-        tags: formData.tags.split(",").map((tag) => tag.trim()),
       });
 
       setFormData({
         title: "",
         description: "",
-        tags: "",
-        modelFile: "",
+        modelUrl: "",
       });
     } catch (error) {
       setError(error.message || "Failed to create post. Please try again.");
@@ -104,7 +93,7 @@ function CreatePost({ onSubmit }) {
     } else {
       setError("");
     }
-    setFormData((prev) => ({ ...prev, modelFile: url }));
+    setFormData((prev) => ({ ...prev, modelUrl: url }));
   };
 
   return (
@@ -118,7 +107,7 @@ function CreatePost({ onSubmit }) {
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, title: e.target.value }))
           }
-          placeholder="Give your creation a name"
+          placeholder="Title of your creation"
           required
         />
       </FormGroup>
@@ -135,7 +124,7 @@ function CreatePost({ onSubmit }) {
         />
       </FormGroup>
 
-      <FormGroup>
+      {/* <FormGroup>
         <Label>Tags (comma-separated)</Label>
         <TagInput
           value={formData.tags}
@@ -144,13 +133,13 @@ function CreatePost({ onSubmit }) {
           }
           placeholder="e.g., sculpture, abstract, modern"
         />
-      </FormGroup>
+      </FormGroup> */}
 
       <FormGroup>
         <Label>3D Model URL</Label>
         <Input
           type="url"
-          value={formData.modelFile}
+          value={formData.modelUrl}
           onChange={handleModelUrlChange}
           placeholder="Enter URL to your 3D model (GLB, GLTF, or OBJ format)"
           required

@@ -19,7 +19,7 @@ const Card = styled.div`
 
 const Header = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
   margin-bottom: ${({ theme }) => theme.spacing.md};
 `;
@@ -82,22 +82,41 @@ const Username = styled.p`
   font-size: 0.9rem;
 `;
 
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+const Title = styled.h3`
+  margin: 0;
+`;
+
 function PostCard({ post, onLike, onComment }) {
   const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
 
+  const dummyAuthor = {
+    id: "1",
+    name: "Jane Smith",
+    avatar: "https://i.pravatar.cc/150?img=1",
+  };
+
+  post.author = post.author || dummyAuthor;
+  post.tags = post.tags || ["3d", "art", "design"];
+
   return (
     <Card>
       <Header>
-        <Link to={`/profile/${post.author.id}`}>
-          <Avatar src={post.author.avatar} alt={post.author.name} />
-        </Link>
-        <div>
-          <h3>{post.title}</h3>
+        <UserInfo>
+          <Link to={`/profile/${post.author.id}`}>
+            <Avatar src={post.author.avatar} alt={post.author.name} />
+          </Link>
           <Link to={`/profile/${post.author.id}`}>
             <Username>{post.author.name}</Username>
           </Link>
-        </div>
+        </UserInfo>
+        <Title>{post.title}</Title>
       </Header>
 
       <Content>
@@ -121,7 +140,7 @@ function PostCard({ post, onLike, onComment }) {
           <StyledIcon>
             {post.liked ? <Favorite /> : <FavoriteBorder />}
           </StyledIcon>
-          {post.likes}
+          {post.likes || 0}
         </ActionButton>
         <ActionButton
           variant="secondary"
@@ -130,7 +149,7 @@ function PostCard({ post, onLike, onComment }) {
           <StyledIcon>
             <ChatBubbleOutline />
           </StyledIcon>
-          {post.comments.length}
+          {post.comments?.length || 0}
         </ActionButton>
       </Actions>
 

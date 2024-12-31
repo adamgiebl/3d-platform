@@ -1,6 +1,7 @@
-const API_URL = "http://localhost:3002/api";
+import { API_URL } from "./consts";
 
 export const createPost = async (postData) => {
+  console.log("createPost", postData);
   try {
     const response = await fetch(`${API_URL}/posts`, {
       method: "POST",
@@ -10,8 +11,7 @@ export const createPost = async (postData) => {
       body: JSON.stringify({
         title: postData.title,
         description: postData.description,
-        tags: postData.tags,
-        modelUrl: postData.modelFile,
+        modelUrl: postData.modelUrl,
       }),
       credentials: "include",
     });

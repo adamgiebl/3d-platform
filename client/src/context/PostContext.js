@@ -27,6 +27,7 @@ export function PostProvider({ children }) {
   };
 
   const createPost = async (postData) => {
+    console.log("createPost", postData);
     try {
       const newPost = await apiCreatePost(postData);
       setPosts((prevPosts) => [newPost, ...prevPosts]);
@@ -34,10 +35,8 @@ export function PostProvider({ children }) {
     } catch (error) {
       console.error("Error creating post:", error);
       const mockNewPost = {
-        id: posts.length + 1,
+        objectId: posts.length + 1,
         ...postData,
-        likes: 0,
-        comments: [],
         createdAt: new Date().toISOString(),
       };
       setPosts((prevPosts) => [mockNewPost, ...prevPosts]);

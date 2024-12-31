@@ -56,6 +56,7 @@ function Layout({ children }) {
   };
 
   const handleCreatePost = (postData) => {
+    console.log("handleCreatePost", postData);
     createPost(postData);
     setIsCreateModalOpen(false);
   };

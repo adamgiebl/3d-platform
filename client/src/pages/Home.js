@@ -131,7 +131,7 @@ function Home() {
         <FeedWrapper>
           {posts.map((post) => (
             <PostCard
-              key={post.id}
+              key={post.objectId}
               post={post}
               onLike={toggleLike}
               onComment={addComment}

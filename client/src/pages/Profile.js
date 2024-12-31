@@ -103,7 +103,7 @@ function Profile() {
       <ProfileHeader>
         <Avatar src={user?.avatar || mockImages.users[0]} alt="Profile" />
         <ProfileInfo>
-          <h1>{user?.name || "User"}</h1>
+          <h1>{user?.username || "User"}</h1>
           <p>{user?.email}</p>
           <Stats>
             <span>Models: {userPosts.length}</span>

@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import Parse from "parse/node";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
@@ -10,6 +11,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3002;
 
+// Enable unsafe current user since we're in Node.js environment
+Parse.User.enableUnsafeCurrentUser();
+
 Parse.initialize(
   process.env.PARSE_APP_ID || "Jn2nFHOhB493ymQJuBrN75XlQyjd1NvIbpULEnsp",
   process.env.PARSE_JS_KEY || "wJk6F64XHBPRN7Qc1udFlcxBbOcw8UAUCilVXFYC",
@@ -17,8 +21,28 @@ Parse.initialize(
 );
 Parse.serverURL = "https://parseapi.back4app.com/";
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
+
+// Middleware to restore Parse session from cookie
+app.use(async (req, res, next) => {
+  const sessionToken = req.cookies.sessionToken;
+  if (sessionToken) {
+    try {
+      await Parse.User.become(sessionToken);
+    } catch (error) {
+      // If session token is invalid, clear it
+      res.clearCookie("sessionToken");
+    }
+  }
+  next();
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
