@@ -122,7 +122,7 @@ const mockCategories = [
 ];
 
 function Home() {
-  const { posts, toggleLike, addComment } = usePosts();
+  const { posts, toggleLike, getLikes, addComment } = usePosts();
   const { user } = useAuth();
 
   return (
@@ -134,6 +134,7 @@ function Home() {
               key={post.objectId}
               post={post}
               onLike={toggleLike}
+              getLikes={getLikes}
               onComment={addComment}
             />
           ))}

@@ -66,4 +66,46 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+// Post post like
+router.post("/:postId/like", async (req, res) => {
+  try {
+    const sessionToken = req.headers["x-parse-session-token"] as string;
+    const user = await Parse.User.become(sessionToken);
+
+    // Check if user already liked the post
+    const query = new Parse.Query("Like");
+    query.contains("post", req.params.postId);
+    query.contains("user", user.id);
+    const exists = await query.find();
+
+    if (exists.length > 0){
+      res.status(200).json({ error: "User already liked that post" });
+    } else {
+      const Like = Parse.Object.extend("Like");
+      const like = new Like();
+      like.set("user", user.id);
+      like.set("post", req.params.postId);
+      const result = await like.save();
+      res.status(201);
+    }
+  } catch (error: any) {
+    console.error("Feed Fetch Error:", error);
+    res.status(500).json({ error: error?.message || "Failed to fetch posts" });
+  }
+});
+
+// Get posts like
+router.get("/:postId/like", async (req, res) => {
+  try {
+    const query = new Parse.Query("Like");
+    query.contains("post", req.params.postId);
+    const likes = await query.count();
+    res.status(200).json({ likes: likes });
+  } catch (error: any) {
+    console.error("Feed Fetch Error:", error);
+    res.status(500).json({ error: error?.message || "Failed to fetch posts" });
+  }
+});
+
 export default router;

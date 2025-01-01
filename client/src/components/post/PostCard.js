@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
@@ -92,7 +92,7 @@ const Title = styled.h3`
   margin: 0;
 `;
 
-function PostCard({ post, onLike, onComment }) {
+function PostCard({ post, onLike, getLikes, onComment }) {
   const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
 
@@ -135,7 +135,7 @@ function PostCard({ post, onLike, onComment }) {
       <Actions>
         <ActionButton
           variant={post.liked ? "primary" : "secondary"}
-          onClick={() => onLike(post.id)}
+          onClick={() => onLike(post.objectId)}
         >
           <StyledIcon>
             {post.liked ? <Favorite /> : <FavoriteBorder />}

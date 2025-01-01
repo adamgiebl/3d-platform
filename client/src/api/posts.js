@@ -64,6 +64,24 @@ export const likePost = async (postId) => {
   }
 };
 
+export const getPostLikes = async (postId) => {
+  try {
+    const response = await fetch(`${API_URL}/posts/${postId}/like`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to retrieve likes for post");
+    }
+    const data = response.json();
+    return data;
+  } catch (error) {
+    console.error("Error retrieving likes for post:", error);
+    throw error;
+  }
+};
+
 export const addComment = async (postId, content) => {
   try {
     const response = await fetch(`${API_URL}/posts/${postId}/comments`, {
