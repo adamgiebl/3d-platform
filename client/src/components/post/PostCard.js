@@ -92,7 +92,7 @@ const Title = styled.h3`
   margin: 0;
 `;
 
-function PostCard({ post, onLike, getLikes, onComment }) {
+function PostCard({ post, onLike, onComment }) {
   const [showComments, setShowComments] = useState(false);
   const { user } = useAuth();
 

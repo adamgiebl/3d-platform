@@ -104,17 +104,4 @@ router.post("/:postId/like", async (req, res) => {
   }
 });
 
-// Get posts like
-router.get("/:postId/like", async (req, res) => {
-  try {
-    const query = new Parse.Query("Like");
-    query.contains("post", req.params.postId);
-    const likes = await query.count();
-    res.status(200).json({ likes: likes });
-  } catch (error: any) {
-    console.error("Feed Fetch Error:", error);
-    res.status(500).json({ error: error?.message || "Failed to fetch posts" });
-  }
-});
-
 export default router;

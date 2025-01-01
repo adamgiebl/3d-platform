@@ -4,7 +4,6 @@ import {
   createPost as apiCreatePost,
   fetchPosts as apiFetchPosts,
   likePost as apiLikePost,
-  getPostLikes as apiGetPostLikes,
   addComment as apiAddComment,
 } from "../api/posts";
 
@@ -66,27 +65,6 @@ export function PostProvider({ children }) {
     }
   };
 
-  const getLikes = async (postId) => {
-    const success = await apiGetPostLikes(postId);
-    try {
-      const success = await apiGetPostLikes(postId);
-      if (success) {
-        setPosts((prevPosts) =>
-          prevPosts.map((post) =>
-            post.id === postId ? { ...post, likes: success.likes } : post
-          )
-        );
-      }
-    } catch (error) {
-      console.error("Error getting likes:", error);
-
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId ? { ...post, likes: 11101111 } : post
-        )
-      );
-    }
-  };
 
   const addComment = async (postId, comment) => {
     try {
@@ -146,7 +124,6 @@ export function PostProvider({ children }) {
         posts,
         createPost,
         toggleLike,
-        getLikes,
         addComment,
         getPostsByUser,
         getPostsByTag,
