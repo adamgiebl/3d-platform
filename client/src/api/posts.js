@@ -52,11 +52,12 @@ export const likePost = async (postId) => {
       method: "POST",
       credentials: "include",
     });
-
+    if (response.status == 201){
+      return false //post already liked by user
+    }
     if (!response.ok) {
       throw new Error("Failed to like post");
     }
-
     return true;
   } catch (error) {
     console.error("Error liking post:", error);

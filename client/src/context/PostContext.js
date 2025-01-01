@@ -30,7 +30,7 @@ export function PostProvider({ children }) {
     console.log("createPost", postData);
     try {
       const newPost = await apiCreatePost(postData);
-      setPosts((prevPosts) => [newPost, ...prevPosts]);
+      setPosts((prevPosts) => [newPost, ...prevPosts]); 
       return newPost;
     } catch (error) {
       console.error("Error creating post:", error);
@@ -47,21 +47,17 @@ export function PostProvider({ children }) {
   const toggleLike = async (postId) => {
     try {
       const success = await apiLikePost(postId);
+      // Returns true if a new like was added, false or nothing if not
       if (success) {
         setPosts((prevPosts) =>
           prevPosts.map((post) =>
             post.id === postId ? { ...post, likes: post.likes + 1 } : post
           )
         );
+        
       }
     } catch (error) {
       console.error("Error liking post:", error);
-
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId ? { ...post, likes: post.likes + 1 } : post
-        )
-      );
     }
   };
 

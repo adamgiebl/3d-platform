@@ -89,14 +89,14 @@ router.post("/:postId/like", async (req, res) => {
     const exists = await query.find();
 
     if (exists.length > 0){
-      res.status(200).json({ error: "User already liked that post" });
+      res.status(201).json({ error: "User already liked that post" });
     } else {
       const Like = Parse.Object.extend("Like");
       const like = new Like();
       like.set("user", user.id);
       like.set("post", req.params.postId);
       const result = await like.save();
-      res.status(201);
+      res.status(200).json({});
     }
   } catch (error: any) {
     console.error("Feed Fetch Error:", error);
