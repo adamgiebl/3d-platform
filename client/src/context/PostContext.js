@@ -51,10 +51,9 @@ export function PostProvider({ children }) {
       if (success) {
         setPosts((prevPosts) =>
           prevPosts.map((post) =>
-            post.id === postId ? { ...post, likes: post.likes + 1 } : post
+            post.objectId === postId ? { ...post, likes: post.liked ? post.likes - 1 : post.likes + 1, liked: !post.liked } : post
           )
         );
-        
       }
     } catch (error) {
       console.error("Error liking post:", error);

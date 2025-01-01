@@ -84,19 +84,19 @@ router.post("/:postId/like", async (req, res) => {
 
     // Check if user already liked the post
     const query = new Parse.Query("Like");
-    query.contains("post", req.params.postId);
-    query.contains("user", user.id);
-    const exists = await query.find();
-
-    if (exists.length > 0){
-      res.status(201).json({ error: "User already liked that post" });
+    query.equalTo("post", req.params.postId);
+    query.equalTo("user", user.id);
+    const existingLike = await query.first();
+    if (existingLike){
+      existingLike.destroy();
+      res.status(200).json({message: "Deleted like"});
     } else {
       const Like = Parse.Object.extend("Like");
       const like = new Like();
       like.set("user", user.id);
       like.set("post", req.params.postId);
       const result = await like.save();
-      res.status(200).json({});
+      res.status(200).json({message: "Added like"});
     }
   } catch (error: any) {
     console.error("Feed Fetch Error:", error);
