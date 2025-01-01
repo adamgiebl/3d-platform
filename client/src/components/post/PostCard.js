@@ -140,7 +140,7 @@ function PostCard({ post, onLike, onComment }) {
           <StyledIcon>
             {post.liked ? <Favorite /> : <FavoriteBorder />}
           </StyledIcon>
-          {post.likesCount || 0}
+          {post.likes || 0}
         </ActionButton>
         <ActionButton
           variant="secondary"

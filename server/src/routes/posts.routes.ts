@@ -61,7 +61,7 @@ router.get("/", async (req, res) => {
           modelUrl: post.get("modelUrl"),
           createdAt: post.get("createdAt"),
           updatedAt: post.get("updatedAt"),
-          likesCount: likes,
+          likes: likes,
         };
       })
     );
