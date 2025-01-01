@@ -48,18 +48,27 @@ router.get("/", async (req, res) => {
 
     const posts = await query.find();
 
-    const formattedPosts = posts.map((post) => ({
-      objectId: post.id,
-      title: post.get("title"),
-      description: post.get("description"),
-      modelUrl: post.get("modelUrl"),
-      createdAt: post.get("createdAt"),
-      updatedAt: post.get("updatedAt"),
-    }));
+    const postsWithLikes = await Promise.all(
+      posts.map(async (post) => {
+        const likesQuery = new Parse.Query("Like");
+        likesQuery.equalTo("post", post.id);
+        const likes = await likesQuery.count();
 
-    console.log(formattedPosts);
+        return {
+          objectId: post.id,
+          title: post.get("title"),
+          description: post.get("description"),
+          modelUrl: post.get("modelUrl"),
+          createdAt: post.get("createdAt"),
+          updatedAt: post.get("updatedAt"),
+          likesCount: likes,
+        };
+      })
+    );
 
-    res.json({ posts: formattedPosts });
+    console.log("Posts with likes:", postsWithLikes);
+
+    res.json({ posts: postsWithLikes });
   } catch (error: any) {
     console.error("Feed Fetch Error:", error);
     res.status(500).json({ error: error?.message || "Failed to fetch posts" });
