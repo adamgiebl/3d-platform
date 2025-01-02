@@ -52,11 +52,12 @@ export const likePost = async (postId) => {
       method: "POST",
       credentials: "include",
     });
-
+    if (response.status == 201) {
+      return false; //post already liked by user
+    }
     if (!response.ok) {
       throw new Error("Failed to like post");
     }
-
     return true;
   } catch (error) {
     console.error("Error liking post:", error);
@@ -83,6 +84,24 @@ export const addComment = async (postId, content) => {
     return data;
   } catch (error) {
     console.error("Error adding comment:", error);
+    throw error;
+  }
+};
+
+export const fetchUserPosts = async (userId) => {
+  try {
+    const response = await fetch(`${API_URL}/posts/user/${userId}`, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch user posts");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
     throw error;
   }
 };

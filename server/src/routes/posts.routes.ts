@@ -7,12 +7,16 @@ const router = Router();
 router.post("/", async (req, res) => {
   try {
     const { title, description, modelUrl } = req.body;
+    const sessionToken = req.headers["x-parse-session-token"] as string;
+    const user = await Parse.User.become(sessionToken);
+
     const Post = Parse.Object.extend("Post");
     const post = new Post();
 
     post.set("title", title);
     post.set("description", description);
     post.set("modelUrl", modelUrl);
+    post.set("user", user);
 
     const result = await post.save();
 
@@ -29,6 +33,11 @@ router.post("/", async (req, res) => {
       modelUrl: result.get("modelUrl"),
       createdAt: result.get("createdAt"),
       updatedAt: result.get("updatedAt"),
+      user: {
+        id: user.id,
+        username: user.get("username"),
+        email: user.get("email"),
+      },
     });
   } catch (error: any) {
     console.error("Post Creation Error:", error);
@@ -42,27 +51,132 @@ router.get("/", async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const query = new Parse.Query("Post");
 
+    query.include("user");
     query.skip((Number(page) - 1) * Number(limit));
     query.limit(Number(limit));
     query.descending("createdAt");
 
     const posts = await query.find();
 
-    const formattedPosts = posts.map((post) => ({
-      objectId: post.id,
-      title: post.get("title"),
-      description: post.get("description"),
-      modelUrl: post.get("modelUrl"),
-      createdAt: post.get("createdAt"),
-      updatedAt: post.get("updatedAt"),
-    }));
+    const postsWithLikes = await Promise.all(
+      posts.map(async (post) => {
+        const likesQuery = new Parse.Query("Like");
+        likesQuery.equalTo("post", post.id);
+        const likes = await likesQuery.count();
 
-    console.log(formattedPosts);
+        const postUser = post.get("user");
 
-    res.json({ posts: formattedPosts });
+        return {
+          objectId: post.id,
+          title: post.get("title"),
+          description: post.get("description"),
+          modelUrl: post.get("modelUrl"),
+          createdAt: post.get("createdAt"),
+          updatedAt: post.get("updatedAt"),
+          likes: likes,
+          user: postUser
+            ? {
+                id: postUser.id,
+                username: postUser.get("username"),
+                email: postUser.get("email"),
+              }
+            : null,
+        };
+      })
+    );
+
+    console.log("Posts with likes:", postsWithLikes);
+
+    res.json({ posts: postsWithLikes });
   } catch (error: any) {
     console.error("Feed Fetch Error:", error);
     res.status(500).json({ error: error?.message || "Failed to fetch posts" });
+  }
+});
+
+// Post post like
+router.post("/:postId/like", async (req, res) => {
+  try {
+    const sessionToken = req.headers["x-parse-session-token"] as string;
+    const user = await Parse.User.become(sessionToken);
+
+    // Check if user already liked the post
+    const query = new Parse.Query("Like");
+    query.equalTo("post", req.params.postId);
+    query.equalTo("user", user.id);
+    const existingLike = await query.first();
+    if (existingLike) {
+      existingLike.destroy();
+      res.status(200).json({ message: "Deleted like" });
+    } else {
+      const Like = Parse.Object.extend("Like");
+      const like = new Like();
+      like.set("user", user.id);
+      like.set("post", req.params.postId);
+      const result = await like.save();
+      res.status(200).json({ message: "Added like" });
+    }
+  } catch (error: any) {
+    console.error("Feed Fetch Error:", error);
+    res.status(500).json({ error: error?.message || "Failed to fetch posts" });
+  }
+});
+
+// Get posts by user ID
+router.get("/user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+    const query = new Parse.Query("Post");
+
+    const userPointer = new Parse.User();
+    userPointer.id = userId;
+    query.equalTo("user", userPointer);
+
+    query.include("user");
+    query.skip((Number(page) - 1) * Number(limit));
+    query.limit(Number(limit));
+    query.descending("createdAt");
+
+    const posts = await query.find();
+    const totalPosts = await query.count();
+
+    const postsWithLikes = await Promise.all(
+      posts.map(async (post) => {
+        const likesQuery = new Parse.Query("Like");
+        likesQuery.equalTo("post", post.id);
+        const likes = await likesQuery.count();
+
+        const postUser = post.get("user");
+
+        return {
+          objectId: post.id,
+          title: post.get("title"),
+          description: post.get("description"),
+          modelUrl: post.get("modelUrl"),
+          createdAt: post.get("createdAt"),
+          updatedAt: post.get("updatedAt"),
+          likes: likes,
+          user: postUser
+            ? {
+                id: postUser.id,
+                username: postUser.get("username"),
+                email: postUser.get("email"),
+              }
+            : null,
+        };
+      })
+    );
+
+    res.json({
+      posts: postsWithLikes,
+      total: totalPosts,
+    });
+  } catch (error: any) {
+    console.error("User Posts Fetch Error:", error);
+    res
+      .status(500)
+      .json({ error: error?.message || "Failed to fetch user posts" });
   }
 });
 

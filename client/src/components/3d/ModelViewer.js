@@ -6,10 +6,17 @@ import React from "react";
 
 const ViewerContainer = styled.div`
   width: 100%;
-  height: 400px;
+  height: 100%;
   background: ${({ theme }) => theme.colors.background};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   overflow: hidden;
+  position: relative;
+
+  /* Make canvas fill the container */
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
 `;
 
 const LoadingContainer = styled.div`
