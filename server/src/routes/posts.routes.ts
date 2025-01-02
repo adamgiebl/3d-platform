@@ -65,11 +65,8 @@ router.get("/", async (req, res) => {
           comments: comments.map((comment) => {
             return {
               content: comment.get("content"),
-              author: {
-                id: comment.get("user").get("id"),
-                name: comment.get("user").get("username"),
-                avatar: comment.get("user").get("avatar"),
-              },
+              id: comment.id,
+              name: comment.get("user").get("username"),
             }
           })
         };
@@ -100,20 +97,13 @@ router.post("/:postId/comments", async (req, res) => {
     comment.set("post", post);
     comment.save();
  
-    /* res.status(200).json(
+    res.status(200).json(
       {
-        comment: {
           content: comment.get("content"),
-          author: {
-            id: user.id,
-            name: "user.name",
-            avatar: "user.avatar",
-        }
-      }
+          id: comment.id,
+          name: user.get("username"),
     } 
-  );*/
-
-  res.status(200).json({})
+  );
   } catch (error: any) {
     console.error("Comment creation Error:", error);
     res.status(500).json({ error: error?.message || "Failed to comment" });

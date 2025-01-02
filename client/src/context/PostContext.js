@@ -78,8 +78,8 @@ export function PostProvider({ children }) {
                   {
                     id: newComment.id,
                     content: newComment.content,
-                    name: newComment.author.name,
-                    createdAt: newComment.author.createdAt,
+                    name: newComment.name,
+                    createdAt: newComment.createdAt,
                   },
                 ],
               }
