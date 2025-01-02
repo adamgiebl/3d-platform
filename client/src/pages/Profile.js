@@ -3,10 +3,13 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import Layout from "../components/layout/Layout";
 import { useAuth } from "../context/AuthContext";
+import { usePosts } from "../context/PostContext";
 import { mockImages } from "../utils/mockData";
-import { mockPosts } from "../context/data";
-import ModelViewer from "../components/3d/ModelViewer";
 import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Loader from "../components/ui/Loader";
+import LoaderContainer from "../components/ui/LoaderContainer";
+import ModelViewer from "../components/3d/ModelViewer";
 
 const ProfileHeader = styled.div`
   display: flex;
@@ -75,16 +78,16 @@ const ProfileActions = styled.div`
 function Profile() {
   const { id } = useParams();
   const { user } = useAuth();
-  const [userPosts, setUserPosts] = useState([]);
+  const { userPosts, userPostsCount, isLoadingUserPosts, fetchUserPosts } =
+    usePosts();
   const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching user's posts
-    const fetchedPosts = mockPosts.filter(
-      (post) => post.author.id === (id || user?.id)
-    );
-    console.table(fetchedPosts, ["id", "title", "author.name"]);
-    setUserPosts(fetchedPosts);
+    const userId = id || user?.id;
+    if (userId) {
+      fetchUserPosts(userId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user?.id]);
 
   const handleFollowToggle = () => {
@@ -106,7 +109,7 @@ function Profile() {
           <h1>{user?.username || "User"}</h1>
           <p>{user?.email}</p>
           <Stats>
-            <span>Models: {userPosts.length}</span>
+            <span>Models: {userPostsCount}</span>
             <span>Followers: 120</span>
             <span>Following: 85</span>
           </Stats>
@@ -125,15 +128,23 @@ function Profile() {
 
       <h2>Gallery</h2>
       <Gallery>
-        {userPosts.map((post) => (
-          <ModelCard key={post.id}>
-            <ModelContainer>
-              <ModelViewer url={post.modelUrl} />
-            </ModelContainer>
-            <ModelTitle>{post.title}</ModelTitle>
-            <ModelDescription>{post.description}</ModelDescription>
+        {isLoadingUserPosts ? (
+          <ModelCard>
+            <LoaderContainer>
+              <Loader />
+            </LoaderContainer>
           </ModelCard>
-        ))}
+        ) : (
+          userPosts.map((post) => (
+            <ModelCard key={post.objectId}>
+              <ModelContainer>
+                <ModelViewer url={post.modelUrl} />
+              </ModelContainer>
+              <ModelTitle>{post.title}</ModelTitle>
+              <ModelDescription>{post.description}</ModelDescription>
+            </ModelCard>
+          ))
+        )}
       </Gallery>
     </Layout>
   );

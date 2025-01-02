@@ -1,8 +1,11 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
+import Card from "../ui/Card";
+import Loader from "../ui/Loader";
+import LoaderContainer from "../ui/LoaderContainer";
 import CommentSection from "./CommentSection";
 import {
   Favorite,
@@ -10,12 +13,6 @@ import {
   ChatBubbleOutline,
 } from "@styled-icons/material";
 import ModelViewer from "../3d/ModelViewer";
-
-const Card = styled.div`
-  background: ${({ theme }) => theme.colors.surface};
-  border-radius: ${({ theme }) => theme.borderRadius.lg};
-  padding: ${({ theme }) => theme.spacing.lg};
-`;
 
 const Header = styled.div`
   display: flex;
@@ -25,8 +22,9 @@ const Header = styled.div`
 `;
 
 const Avatar = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
+  display: block;
   border-radius: ${({ theme }) => theme.borderRadius.round};
 `;
 
@@ -77,7 +75,7 @@ const ModelContainer = styled.div`
   background: ${({ theme }) => theme.colors.background};
 `;
 
-const Username = styled.p`
+const Username = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
   font-size: 0.9rem;
 `;
@@ -92,28 +90,43 @@ const Title = styled.h3`
   margin: 0;
 `;
 
-function PostCard({ post, onLike, onComment }) {
+function PostCard({ post, onLike, onComment, isLoading }) {
   const [showComments, setShowComments] = useState(false);
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
 
-  const dummyAuthor = {
-    id: "1",
-    name: "Jane Smith",
+  const defaultUser = {
+    id: "unknown",
+    username: "Anonymous User",
+    email: "",
     avatar: "https://i.pravatar.cc/150?img=1",
   };
 
-  post.author = post.author || dummyAuthor;
-  post.tags = post.tags || ["3d", "art", "design"];
+  if (isLoading) {
+    return (
+      <Card>
+        <LoaderContainer>
+          <Loader />
+        </LoaderContainer>
+      </Card>
+    );
+  }
+
+  const postUser = post.user || defaultUser;
+
+  const tags = post.tags || ["3d", "art", "design"];
 
   return (
     <Card>
       <Header>
         <UserInfo>
-          <Link to={`/profile/${post.author.id}`}>
-            <Avatar src={post.author.avatar} alt={post.author.name} />
+          <Link to={`/profile/${postUser.id}`}>
+            <Avatar
+              src={postUser.avatar || defaultUser.avatar}
+              alt={postUser.username}
+            />
           </Link>
-          <Link to={`/profile/${post.author.id}`}>
-            <Username>{post.author.name}</Username>
+          <Link to={`/profile/${postUser.id}`}>
+            <Username>{postUser.username}</Username>
           </Link>
         </UserInfo>
         <Title>{post.title}</Title>
@@ -127,7 +140,7 @@ function PostCard({ post, onLike, onComment }) {
       </Content>
 
       <TagList>
-        {post.tags.map((tag) => (
+        {tags.map((tag) => (
           <Tag key={tag}>#{tag}</Tag>
         ))}
       </TagList>
