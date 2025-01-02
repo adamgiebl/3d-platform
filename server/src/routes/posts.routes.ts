@@ -96,8 +96,6 @@ router.get("/", async (req, res) => {
       })
     );
 
-    console.log("Posts with likes:", postsWithLikes);
-
     res.json({ posts: postsWithLikes });
   } catch (error: any) {
     console.error("Feed Fetch Error:", error);
