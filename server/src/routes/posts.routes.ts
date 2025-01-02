@@ -48,21 +48,75 @@ router.get("/", async (req, res) => {
 
     const posts = await query.find();
 
-    const formattedPosts = posts.map((post) => ({
-      objectId: post.id,
-      title: post.get("title"),
-      description: post.get("description"),
-      modelUrl: post.get("modelUrl"),
-      createdAt: post.get("createdAt"),
-      updatedAt: post.get("updatedAt"),
-    }));
+    const postsWithComments = await Promise.all(      
+      posts.map(async (post) => {
+        const commentsQuery = new Parse.Query("Comment");
+        commentsQuery.equalTo("post", post.toPointer());
+        commentsQuery.include("user");
+        const comments = await commentsQuery.find();
 
-    console.log(formattedPosts);
-
-    res.json({ posts: formattedPosts });
+        return {
+          objectId: post.id,
+          title: post.get("title"),
+          description: post.get("description"),
+          modelUrl: post.get("modelUrl"),
+          createdAt: post.get("createdAt"),
+          updatedAt: post.get("updatedAt"),
+          comments: comments.map((comment) => {
+            return {
+              content: comment.get("content"),
+              author: {
+                id: comment.get("user").get("id"),
+                name: comment.get("user").get("username"),
+                avatar: comment.get("user").get("avatar"),
+              },
+            }
+          })
+        };
+      })  
+    );
+    res.json({ posts: postsWithComments });
   } catch (error: any) {
     console.error("Feed Fetch Error:", error);
     res.status(500).json({ error: error?.message || "Failed to fetch posts" });
+  }
+});
+
+
+// Add post comment
+router.post("/:postId/comments", async (req, res) => {
+  try {
+    const sessionToken = req.headers["x-parse-session-token"] as string;
+    const user = await Parse.User.become(sessionToken);
+
+    const postQuery = new Parse.Query("Post");
+    const post = await postQuery.get(req.params.postId);
+
+    const Comment = Parse.Object.extend("Comment");
+    const comment = new Comment();
+  
+    comment.set("content", req.body.content);
+    comment.set("user", user);
+    comment.set("post", post);
+    comment.save();
+ 
+    /* res.status(200).json(
+      {
+        comment: {
+          content: comment.get("content"),
+          author: {
+            id: user.id,
+            name: "user.name",
+            avatar: "user.avatar",
+        }
+      }
+    } 
+  );*/
+
+  res.status(200).json({})
+  } catch (error: any) {
+    console.error("Comment creation Error:", error);
+    res.status(500).json({ error: error?.message || "Failed to comment" });
   }
 });
 

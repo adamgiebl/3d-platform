@@ -70,16 +70,16 @@ export function PostProvider({ children }) {
       const newComment = await apiAddComment(postId, comment.content);
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
-          post.id === postId
+          post.objectId === postId
             ? {
                 ...post,
                 comments: [
                   ...post.comments,
                   {
                     id: newComment.id,
-                    content: comment.content,
-                    author: comment.author,
-                    createdAt: newComment.createdAt,
+                    content: newComment.content,
+                    name: newComment.author.name,
+                    createdAt: newComment.author.createdAt,
                   },
                 ],
               }
