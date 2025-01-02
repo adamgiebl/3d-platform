@@ -66,7 +66,7 @@ function CommentSection({ post, onComment }) {
         {post.comments.map((comment) => (
           <Comment key={comment.id}>
             <CommentAvatar
-              //src={comment.author.avatar}
+              src={"https://i.pravatar.cc/150?img=1"} //Placeholder img
               alt={comment.name}
             />
             <CommentContent>
