@@ -9,6 +9,8 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ComponentLibrary from "./pages/ComponentLibrary";
+import StyleGuide from "./pages/StyleGuide";
 import Parse from "parse";
 
 const appId = "Jn2nFHOhB493ymQJuBrN75XlQyjd1NvIbpULEnsp";
@@ -29,6 +31,8 @@ function App() {
               <Route path="/profile/:id" element={<Profile />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/component-library" element={<ComponentLibrary />} />
+              <Route path="/style-guide" element={<StyleGuide />} />
             </Routes>
           </Router>
         </PostProvider>
