@@ -52,13 +52,10 @@ function CommentSection({ post, onComment }) {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    onComment(post.id, {
+    onComment(post.objectId, {
       content: newComment,
-      author: {
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-      },
+      id: newComment.id,
+      name: user.name,
     });
     setNewComment("");
   };
@@ -69,11 +66,11 @@ function CommentSection({ post, onComment }) {
         {post.comments.map((comment) => (
           <Comment key={comment.id}>
             <CommentAvatar
-              src={comment.author.avatar}
-              alt={comment.author.name}
+              src={"https://i.pravatar.cc/150?img=1"} //Placeholder img
+              alt={comment.name}
             />
             <CommentContent>
-              <strong>{comment.author.name}</strong>
+              <strong>{comment.name}</strong>
               <p>{comment.content}</p>
             </CommentContent>
           </Comment>
