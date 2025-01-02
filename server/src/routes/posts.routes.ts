@@ -88,11 +88,8 @@ router.get("/", async (req, res) => {
           comments: comments.map((comment) => {
             return {
               content: comment.get("content"),
-              author: {
-                id: comment.get("user").get("id"),
-                name: comment.get("user").get("username"),
-                avatar: comment.get("user").get("avatar"),
-              },
+              id: comment.id,
+              name: comment.get("user").get("username"),
             }
           })
         };
