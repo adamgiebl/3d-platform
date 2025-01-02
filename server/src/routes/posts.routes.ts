@@ -66,6 +66,10 @@ router.get("/", async (req, res) => {
 
         const postUser = post.get("user");
 
+        const commentsQuery = new Parse.Query("Comment");
+        commentsQuery.equalTo("post", post.toPointer());
+        commentsQuery.include("user");
+        const comments = await commentsQuery.find();
         return {
           objectId: post.id,
           title: post.get("title"),
@@ -81,6 +85,16 @@ router.get("/", async (req, res) => {
                 email: postUser.get("email"),
               }
             : null,
+          comments: comments.map((comment) => {
+            return {
+              content: comment.get("content"),
+              author: {
+                id: comment.get("user").get("id"),
+                name: comment.get("user").get("username"),
+                avatar: comment.get("user").get("avatar"),
+              },
+            }
+          })
         };
       })
     );
@@ -177,6 +191,37 @@ router.get("/user/:userId", async (req, res) => {
     res
       .status(500)
       .json({ error: error?.message || "Failed to fetch user posts" });
+  }
+});
+
+
+// Add post comment
+router.post("/:postId/comments", async (req, res) => {
+  try {
+    const sessionToken = req.headers["x-parse-session-token"] as string;
+    const user = await Parse.User.become(sessionToken);
+
+    const postQuery = new Parse.Query("Post");
+    const post = await postQuery.get(req.params.postId);
+
+    const Comment = Parse.Object.extend("Comment");
+    const comment = new Comment();
+  
+    comment.set("content", req.body.content);
+    comment.set("user", user);
+    comment.set("post", post);
+    comment.save();
+ 
+    res.status(200).json(
+      {
+          content: comment.get("content"),
+          id: comment.id,
+          name: user.get("username"),
+    } 
+  );
+  } catch (error: any) {
+    console.error("Comment creation Error:", error);
+    res.status(500).json({ error: error?.message || "Failed to comment" });
   }
 });
 

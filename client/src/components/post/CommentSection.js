@@ -52,7 +52,7 @@ function CommentSection({ post, onComment }) {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    onComment(post.id, {
+    onComment(post.objectId, {
       content: newComment,
       author: {
         id: user.id,
