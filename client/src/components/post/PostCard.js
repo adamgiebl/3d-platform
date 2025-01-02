@@ -69,6 +69,7 @@ const StyledIcon = styled.div`
 `;
 
 const ModelContainer = styled.div`
+  height: 400px;
   margin: ${({ theme }) => theme.spacing.md} 0;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   overflow: hidden;

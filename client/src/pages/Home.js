@@ -5,10 +5,14 @@ import { usePosts } from "../context/PostContext";
 import PostCard from "../components/post/PostCard";
 import { mockImages } from "../utils/mockData";
 import { Link } from "react-router-dom";
+import Card from "../components/ui/Card";
+import Loader from "../components/ui/Loader";
+import LoaderContainer from "../components/ui/LoaderContainer";
 
 const HomeLayout = styled.div`
   display: grid;
   grid-template-columns: 1fr 300px;
+  align-items: start;
   gap: ${({ theme }) => theme.spacing.xl};
   max-width: 1200px;
   margin: 0 auto;
@@ -122,21 +126,29 @@ const mockCategories = [
 ];
 
 function Home() {
-  const { posts, toggleLike, addComment } = usePosts();
+  const { posts, isLoading, toggleLike, addComment } = usePosts();
   const { user } = useAuth();
 
   return (
     <Layout>
       <HomeLayout>
         <FeedWrapper>
-          {posts.map((post) => (
-            <PostCard
-              key={post.objectId}
-              post={post}
-              onLike={toggleLike}
-              onComment={addComment}
-            />
-          ))}
+          {isLoading ? (
+            <Card>
+              <LoaderContainer>
+                <Loader />
+              </LoaderContainer>
+            </Card>
+          ) : (
+            posts.map((post) => (
+              <PostCard
+                key={post.objectId}
+                post={post}
+                onLike={toggleLike}
+                onComment={addComment}
+              />
+            ))
+          )}
         </FeedWrapper>
 
         <Sidebar>
