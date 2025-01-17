@@ -6,7 +6,8 @@ const router = Router();
 // Create a new post
 router.post("/", async (req, res) => {
   try {
-    const { title, description, modelUrl } = req.body;
+    const { title, description, modelUrl, tags } = req.body;
+    console.log("tags:", tags);
     const sessionToken = req.headers["x-parse-session-token"] as string;
     const user = await Parse.User.become(sessionToken);
 
@@ -16,21 +17,19 @@ router.post("/", async (req, res) => {
     post.set("title", title);
     post.set("description", description);
     post.set("modelUrl", modelUrl);
+    post.set("tags", tags);
     post.set("user", user);
 
     const result = await post.save();
 
-    console.table({
-      Action: "Create Post",
-      Title: title,
-      Status: "Success",
-    });
+    console.log("tags2:", result.get("tags"));
 
     res.status(201).json({
       objectId: result.id,
       title: result.get("title"),
       description: result.get("description"),
       modelUrl: result.get("modelUrl"),
+      tags: result.get("tags"),
       createdAt: result.get("createdAt"),
       updatedAt: result.get("updatedAt"),
       user: {
@@ -75,6 +74,7 @@ router.get("/", async (req, res) => {
           title: post.get("title"),
           description: post.get("description"),
           modelUrl: post.get("modelUrl"),
+          tags: post.get("tags"),
           createdAt: post.get("createdAt"),
           updatedAt: post.get("updatedAt"),
           likes: likes,

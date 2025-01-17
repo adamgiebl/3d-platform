@@ -50,6 +50,7 @@ function CreatePost({ onSubmit }) {
     description: "",
     modelUrl:
       "https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf",
+    tags: "",
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,12 +64,14 @@ function CreatePost({ onSubmit }) {
       console.log("submitting formdata", formData);
       await onSubmit({
         ...formData,
+        tags: formData.tags.split(",").map((tag) => tag.trim()),
       });
 
       setFormData({
         title: "",
         description: "",
         modelUrl: "",
+        tags: "",
       });
     } catch (error) {
       setError(error.message || "Failed to create post. Please try again.");
@@ -124,16 +127,16 @@ function CreatePost({ onSubmit }) {
         />
       </FormGroup>
 
-      {/* <FormGroup>
+      <FormGroup> 
         <Label>Tags (comma-separated)</Label>
-        <TagInput
+        <Input
           value={formData.tags}
           onChange={(e) =>
             setFormData((prev) => ({ ...prev, tags: e.target.value }))
           }
           placeholder="e.g., sculpture, abstract, modern"
         />
-      </FormGroup> */}
+      </FormGroup>
 
       <FormGroup>
         <Label>3D Model URL</Label>

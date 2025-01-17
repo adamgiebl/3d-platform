@@ -12,6 +12,7 @@ export const createPost = async (postData) => {
         title: postData.title,
         description: postData.description,
         modelUrl: postData.modelUrl,
+        tags: postData.tags,
       }),
       credentials: "include",
     });
