@@ -1,7 +1,7 @@
 import { API_URL } from "./consts";
 
 export const createPost = async (postData) => {
-  console.log("createPost", postData);
+  
   try {
     const response = await fetch(`${API_URL}/posts`, {
       method: "POST",
@@ -103,6 +103,24 @@ export const fetchUserPosts = async (userId) => {
     return data;
   } catch (error) {
     console.error("Error fetching user posts:", error);
+    throw error;
+  }
+};
+
+export const fetchPostsByTag = async (tag) => {
+  try {
+    const response = await fetch(`${API_URL}/posts/tag/${tag}`, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts by tag");
+    }
+
+    const { posts } = await response.json();
+    return { posts };
+  } catch (error) {
+    console.error("Error fetching posts by tag:", error);
     throw error;
   }
 };
