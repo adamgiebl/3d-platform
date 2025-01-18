@@ -130,22 +130,9 @@ const mockCategories = [
 ];
 
 function TagPage() {
-  const { tag } = useParams();
+  
   const { posts, isLoading, toggleLike, addComment, setPosts } = usePosts();
   const { user } = useAuth();
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const posts = await fetchPostsPerTag(tag);
-        setPosts(posts);
-      } catch (error) {
-        console.error("Error fetching posts by tag:", error);
-      }
-    };
-
-    fetchPosts();
-  }, [tag, setPosts]);
 
   return (
     <Layout>
