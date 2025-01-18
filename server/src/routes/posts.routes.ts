@@ -235,7 +235,6 @@ router.post("/:postId/comments", async (req, res) => {
   }
 });
 
-
 router.get("/tag/:tag", async (req, res) => {
   try {
     const { tag } = req.params;
@@ -256,20 +255,27 @@ router.get("/tag/:tag", async (req, res) => {
 
     const posts = postTags.map((postTag) => postTag.get("post_id"));
 
-    const postsWithLikes = await Promise.all(
+    const postsWithDetails = await Promise.all(
       posts.map(async (post) => {
         const likesQuery = new Parse.Query("Like");
-        likesQuery.equalTo("post", post.id);
+        likesQuery.equalTo("post", post);
         const likes = await likesQuery.count();
 
-        const postUser = post.get("user");
+        const postUser = await post.get("user").fetch();
+
+        
+        const postTagQuery = new Parse.Query("post_tags");
+        postTagQuery.equalTo("post_id", post);
+        postTagQuery.include("tag_id");
+        const postTags = await postTagQuery.find();
+        const tags = postTags.map((postTag) => postTag.get("tag_id").get("tag_name"));
 
         return {
           objectId: post.id,
           title: post.get("title"),
           description: post.get("description"),
           modelUrl: post.get("modelUrl"),
-          tags: await getPostTags(post),
+          tags: tags,
           createdAt: post.get("createdAt"),
           updatedAt: post.get("updatedAt"),
           likes: likes,
@@ -284,21 +290,11 @@ router.get("/tag/:tag", async (req, res) => {
       })
     );
 
-    res.json({ posts: postsWithLikes });
+    res.json({ posts: postsWithDetails });
   } catch (error: any) {
     console.error("Tag Fetch Error:", error);
     res.status(500).json({ error: error?.message || "Failed to fetch posts" });
   }
 });
-
-
-async function getPostTags(post: Parse.Object) {
-  const postTagQuery = new Parse.Query("post_tags");
-  postTagQuery.equalTo("post_id", post);
-  postTagQuery.include("tag_id");
-  const postTags = await postTagQuery.find();
-
-  return postTags.map((postTag) => postTag.get("tag_id").get("tag_name"));
-}
 
 export default router;

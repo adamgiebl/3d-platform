@@ -45,12 +45,19 @@ const TagList = styled.div`
   flex-wrap: wrap;
 `;
 
-const Tag = styled.span`
+const Tag = styled(Link)`
   background: ${({ theme }) => theme.colors.primary}20;
   color: ${({ theme }) => theme.colors.textSecondary};
   padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textOnPrimary};
+  }
 `;
 
 const ActionButton = styled(Button)`
@@ -142,7 +149,9 @@ function PostCard({ post, onLike, onComment, isLoading }) {
 
       <TagList>
         {tags.map((tag) => (
-          <Tag key={tag}>#{tag}</Tag>
+          <Tag key={tag} to={`/tag/${tag}`}>
+            #{tag}
+          </Tag>
         ))}
       </TagList>
 
@@ -170,6 +179,6 @@ function PostCard({ post, onLike, onComment, isLoading }) {
       {showComments && <CommentSection post={post} onComment={onComment} />}
     </Card>
   );
-}
+};
 
 export default PostCard;

@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ComponentLibrary from "./pages/ComponentLibrary";
 import StyleGuide from "./pages/StyleGuide";
+import TagPage from "./pages/TagPage";
 import Parse from "parse";
 
 const appId = "Jn2nFHOhB493ymQJuBrN75XlQyjd1NvIbpULEnsp";
@@ -33,6 +34,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/component-library" element={<ComponentLibrary />} />
               <Route path="/style-guide" element={<StyleGuide />} />
+              <Route path="/tag/:tag" element={<TagPage />} />
             </Routes>
           </Router>
         </PostProvider>
