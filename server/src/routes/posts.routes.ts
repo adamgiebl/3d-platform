@@ -86,9 +86,12 @@ router.get("/", async (req, res) => {
         postTagQ.include("tag_id");
         const postTags = await postTagQ.find();
 
-        const tags = postTags.map((postTag) =>
-          postTag.get("tag_id").get("tag_name")
-        );
+        const tags = postTags
+          .map((postTag) => {
+            const tagObj = postTag.get("tag_id");
+            return tagObj ? tagObj.get("tag_name") : null;
+          })
+          .filter(Boolean);
 
         const likesQuery = new Parse.Query("Like");
         likesQuery.equalTo("post", post.id);
@@ -283,9 +286,12 @@ router.get("/tag/:tag", async (req, res) => {
           postTagQuery.equalTo("post_id", post);
           postTagQuery.include("tag_id");
           const postTags = await postTagQuery.find();
-          const tags = postTags.map((postTag) =>
-            postTag.get("tag_id").get("tag_name")
-          );
+          const tags = postTags
+            .map((postTag) => {
+              const tagObj = postTag.get("tag_id");
+              return tagObj ? tagObj.get("tag_name") : null;
+            })
+            .filter(Boolean);
 
           return {
             objectId: post.id,
