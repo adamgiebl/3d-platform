@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import { useAuth } from "../context/AuthContext";
@@ -130,9 +130,26 @@ const mockCategories = [
 ];
 
 function TagPage() {
-  
-  const { posts, isLoading, toggleLike, addComment, setPosts } = usePosts();
+  const { toggleLike, addComment } = usePosts();
   const { user } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const params = useParams();
+  const tag = params.tag;
+
+  console.log(tag);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const posts = await fetchPostsPerTag(tag);
+        setPosts(posts);
+      } catch (error) {
+        console.error("Error fetching posts by tag:", error);
+      }
+    };
+    fetchPosts();
+  }, [tag, setPosts]);
 
   return (
     <Layout>

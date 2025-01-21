@@ -20,7 +20,6 @@ router.post("/", async (req, res) => {
 
     const result = await post.save();
 
-    
     const Tag = Parse.Object.extend("tags");
     const PostTag = Parse.Object.extend("post_tags");
 
@@ -83,7 +82,9 @@ router.get("/", async (req, res) => {
         postTagQ.include("tag_id");
         const postTags = await postTagQ.find();
 
-        const tags = postTags.map((postTag) => postTag.get("tag_id").get("tag_name"));
+        const tags = postTags.map((postTag) =>
+          postTag.get("tag_id").get("tag_name")
+        );
 
         const likesQuery = new Parse.Query("Like");
         likesQuery.equalTo("post", post.id);
@@ -204,7 +205,6 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
-
 // Add post comment
 router.post("/:postId/comments", async (req, res) => {
   try {
@@ -216,19 +216,17 @@ router.post("/:postId/comments", async (req, res) => {
 
     const Comment = Parse.Object.extend("Comment");
     const comment = new Comment();
-  
+
     comment.set("content", req.body.content);
     comment.set("user", user);
     comment.set("post", post);
     comment.save();
- 
-    res.status(200).json(
-      {
-          content: comment.get("content"),
-          id: comment.id,
-          name: user.get("username"),
-    } 
-  );
+
+    res.status(200).json({
+      content: comment.get("content"),
+      id: comment.id,
+      name: user.get("username"),
+    });
   } catch (error: any) {
     console.error("Comment creation Error:", error);
     res.status(500).json({ error: error?.message || "Failed to comment" });
@@ -238,6 +236,7 @@ router.post("/:postId/comments", async (req, res) => {
 router.get("/tag/:tag", async (req, res) => {
   try {
     const { tag } = req.params;
+
     const Tag = Parse.Object.extend("tags");
     const tagQuery = new Parse.Query(Tag);
     tagQuery.equalTo("tag_name", tag);
@@ -250,49 +249,54 @@ router.get("/tag/:tag", async (req, res) => {
     const PostTag = Parse.Object.extend("post_tags");
     const postTagQuery = new Parse.Query(PostTag);
     postTagQuery.equalTo("tag_id", tagObject);
-    postTagQuery.include("post_id");
+    postTagQuery.include(["post_id", "post_id.user"]);
     const postTags = await postTagQuery.find();
 
     const posts = postTags.map((postTag) => postTag.get("post_id"));
 
     const postsWithDetails = await Promise.all(
       posts.map(async (post) => {
-        const likesQuery = new Parse.Query("Like");
-        likesQuery.equalTo("post", post);
-        const likes = await likesQuery.count();
+        try {
+          const likesQuery = new Parse.Query("Like");
+          likesQuery.equalTo("post", post.id);
+          const likes = await likesQuery.count();
 
-        const postUser = await post.get("user").fetch();
+          const postUser = post.get("user");
 
-        
-        const postTagQuery = new Parse.Query("post_tags");
-        postTagQuery.equalTo("post_id", post);
-        postTagQuery.include("tag_id");
-        const postTags = await postTagQuery.find();
-        const tags = postTags.map((postTag) => postTag.get("tag_id").get("tag_name"));
+          const postTagQuery = new Parse.Query("post_tags");
+          postTagQuery.equalTo("post_id", post);
+          postTagQuery.include("tag_id");
+          const postTags = await postTagQuery.find();
+          const tags = postTags.map((postTag) =>
+            postTag.get("tag_id").get("tag_name")
+          );
 
-        return {
-          objectId: post.id,
-          title: post.get("title"),
-          description: post.get("description"),
-          modelUrl: post.get("modelUrl"),
-          tags: tags,
-          createdAt: post.get("createdAt"),
-          updatedAt: post.get("updatedAt"),
-          likes: likes,
-          user: postUser
-            ? {
-                id: postUser.id,
-                username: postUser.get("username"),
-                email: postUser.get("email"),
-              }
-            : null,
-        };
+          return {
+            objectId: post.id,
+            title: post.get("title"),
+            description: post.get("description"),
+            modelUrl: post.get("modelUrl"),
+            tags: tags,
+            createdAt: post.get("createdAt"),
+            updatedAt: post.get("updatedAt"),
+            likes: likes,
+            user: postUser
+              ? {
+                  id: postUser.id,
+                  username: postUser.get("username"),
+                  email: postUser.get("email"),
+                }
+              : null,
+          };
+        } catch (error: any) {
+          return null;
+        }
       })
     );
 
-    res.json({ posts: postsWithDetails });
+    const validPosts = postsWithDetails.filter((post) => post !== null);
+    res.json({ posts: validPosts });
   } catch (error: any) {
-    console.error("Tag Fetch Error:", error);
     res.status(500).json({ error: error?.message || "Failed to fetch posts" });
   }
 });

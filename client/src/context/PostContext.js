@@ -7,6 +7,7 @@ import {
   addComment as apiAddComment,
   fetchUserPosts as apiFetchUserPosts,
 } from "../api/posts";
+import { useParams } from "react-router-dom";
 
 const PostContext = createContext();
 
@@ -16,6 +17,9 @@ export function PostProvider({ children }) {
   const [userPostsCount, setUserPostsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingUserPosts, setIsLoadingUserPosts] = useState(false);
+  const params = useParams();
+
+  console.log(params);
 
   useEffect(() => {
     loadPosts();
