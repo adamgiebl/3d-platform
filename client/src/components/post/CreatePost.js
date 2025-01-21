@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
-import { useAuth } from "../../context/AuthContext";
+import TagInput from "../ui/TagInput";
+import { fetchTags } from "../../api/tags";
 
 const Form = styled.form`
   background: ${({ theme }) => theme.colors.surface};
@@ -50,10 +51,41 @@ function CreatePost({ onSubmit }) {
     description: "",
     modelUrl:
       "https://threejs.org/examples/models/gltf/DamagedHelmet/glTF/DamagedHelmet.gltf",
-    tags: "",
+    tags: [],
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableTags, setAvailableTags] = useState([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
+
+  useEffect(() => {
+    const loadTags = async () => {
+      setIsLoadingTags(true);
+      try {
+        const tags = await fetchTags();
+        setAvailableTags(tags.map((tag) => tag.name));
+      } catch (error) {
+        console.error("Error loading tags:", error);
+        // Fallback to some default tags if the API fails
+        setAvailableTags([
+          "3D",
+          "animation",
+          "character",
+          "environment",
+          "game",
+          "lowpoly",
+          "rigged",
+          "sculpture",
+          "abstract",
+          "modern",
+        ]);
+      } finally {
+        setIsLoadingTags(false);
+      }
+    };
+
+    loadTags();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,16 +94,13 @@ function CreatePost({ onSubmit }) {
 
     try {
       console.log("submitting formdata", formData);
-      await onSubmit({
-        ...formData,
-        tags: formData.tags.split(",").map((tag) => tag.trim()),
-      });
+      await onSubmit(formData);
 
       setFormData({
         title: "",
         description: "",
         modelUrl: "",
-        tags: "",
+        tags: [],
       });
     } catch (error) {
       setError(error.message || "Failed to create post. Please try again.");
@@ -127,14 +156,13 @@ function CreatePost({ onSubmit }) {
         />
       </FormGroup>
 
-      <FormGroup> 
-        <Label>Tags (comma-separated)</Label>
-        <Input
+      <FormGroup>
+        <Label>Tags</Label>
+        <TagInput
+          existingTags={availableTags}
           value={formData.tags}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, tags: e.target.value }))
-          }
-          placeholder="e.g., sculpture, abstract, modern"
+          onChange={(tags) => setFormData((prev) => ({ ...prev, tags }))}
+          isLoading={isLoadingTags}
         />
       </FormGroup>
 

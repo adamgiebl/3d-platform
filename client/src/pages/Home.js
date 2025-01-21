@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import Layout from "../components/layout/Layout";
 import { useAuth } from "../context/AuthContext";
@@ -8,6 +9,7 @@ import { Link } from "react-router-dom";
 import Card from "../components/ui/Card";
 import Loader from "../components/ui/Loader";
 import LoaderContainer from "../components/ui/LoaderContainer";
+import { fetchTags } from "../api/tags";
 
 const HomeLayout = styled.div`
   display: grid;
@@ -83,21 +85,32 @@ const CreatorInfo = styled.div`
   }
 `;
 
-const CategoryList = styled.div`
+const TagList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
-const Category = styled.div`
+const Tag = styled(Link)`
   padding: ${({ theme }) => theme.spacing.sm};
   background: ${({ theme }) => theme.colors.background};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   cursor: pointer;
   transition: all 0.2s;
+  text-decoration: none;
+  color: ${({ theme }) => theme.colors.text};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
   &:hover {
     background: ${({ theme }) => theme.colors.primary}20;
+    color: ${({ theme }) => theme.colors.primary};
+  }
+
+  span.count {
+    color: ${({ theme }) => theme.colors.textSecondary};
+    font-size: 0.875rem;
   }
 `;
 
@@ -117,17 +130,29 @@ const mockCreators = [
   },
 ];
 
-const mockCategories = [
-  "3D Characters",
-  "Abstract Art",
-  "Animations",
-  "Architectural",
-  "Game Assets",
-];
-
 function Home() {
   const { posts, isLoading, toggleLike, addComment } = usePosts();
   const { user } = useAuth();
+  const [tags, setTags] = useState([]);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
+
+  useEffect(() => {
+    const loadTags = async () => {
+      setIsLoadingTags(true);
+      try {
+        const fetchedTags = await fetchTags();
+        // Take top 10 tags by usage count
+        setTags(fetchedTags.slice(0, 6));
+      } catch (error) {
+        console.error("Error loading tags:", error);
+        setTags([]);
+      } finally {
+        setIsLoadingTags(false);
+      }
+    };
+
+    loadTags();
+  }, []);
 
   return (
     <Layout>
@@ -168,12 +193,21 @@ function Home() {
           </SidebarSection>
 
           <SidebarSection>
-            <SectionTitle>Categories</SectionTitle>
-            <CategoryList>
-              {mockCategories.map((category) => (
-                <Category key={category}>{category}</Category>
-              ))}
-            </CategoryList>
+            <SectionTitle>Popular Tags</SectionTitle>
+            <TagList>
+              {isLoadingTags ? (
+                <LoaderContainer>
+                  <Loader />
+                </LoaderContainer>
+              ) : (
+                tags.map((tag) => (
+                  <Tag key={tag.id} to={`/tag/${tag.name}`}>
+                    {tag.name}
+                    <span className="count">{tag.count} posts</span>
+                  </Tag>
+                ))
+              )}
+            </TagList>
           </SidebarSection>
         </Sidebar>
       </HomeLayout>

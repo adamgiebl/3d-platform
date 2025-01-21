@@ -5,7 +5,7 @@ import Parse from "parse/node";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import postRoutes from "./routes/posts.routes";
-
+import tagRoutes from "./routes/tags.routes";
 dotenv.config();
 
 const app = express();
@@ -46,6 +46,7 @@ app.use(async (req, res, next) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/tags", tagRoutes);
 
 app.get("/api/introspect", async (req, res) => {
   try {
