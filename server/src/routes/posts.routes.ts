@@ -66,8 +66,17 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-    const query = new Parse.Query("Post");
+    const sessionToken = req.headers["x-parse-session-token"] as string;
 
+    // Become the user to get proper access rights
+    if (sessionToken) {
+      await Parse.User.become(sessionToken);
+    }
+
+    const Post = Parse.Object.extend("Post");
+    const query = new Parse.Query(Post);
+
+    // Include the user pointer and specify we want public fields
     query.include("user");
     query.skip((Number(page) - 1) * Number(limit));
     query.limit(Number(limit));
@@ -90,7 +99,18 @@ router.get("/", async (req, res) => {
         likesQuery.equalTo("post", post.id);
         const likes = await likesQuery.count();
 
+        // Get the user object that was included with the post
         const postUser = post.get("user");
+
+        // Log for debugging
+        if (!postUser) {
+          console.warn(`Missing user for post ${post.id}`);
+        }
+
+        const commentsQuery = new Parse.Query("Comment");
+        commentsQuery.equalTo("post", post.toPointer());
+        commentsQuery.include("user");
+        const comments = await commentsQuery.find();
 
         return {
           objectId: post.id,
@@ -101,6 +121,13 @@ router.get("/", async (req, res) => {
           createdAt: post.get("createdAt"),
           updatedAt: post.get("updatedAt"),
           likes: likes,
+          comments: comments.map((comment) => {
+            return {
+              content: comment.get("content"),
+              id: comment.id,
+              name: comment.get("user")?.get("username"),
+            };
+          }),
           user: postUser
             ? {
                 id: postUser.id,
