@@ -60,21 +60,24 @@ function CommentSection({ post, onComment }) {
     setNewComment("");
   };
 
+  console.log("POST", post);
+
   return (
     <Container>
       <CommentList>
-        {post.comments.map((comment) => (
-          <Comment key={comment.id}>
-            <CommentAvatar
-              src={"https://i.pravatar.cc/150?img=1"} //Placeholder img
-              alt={comment.name}
-            />
-            <CommentContent>
-              <strong>{comment.name}</strong>
-              <p>{comment.content}</p>
-            </CommentContent>
-          </Comment>
-        ))}
+        {post.comments &&
+          post.comments.map((comment) => (
+            <Comment key={comment.id}>
+              <CommentAvatar
+                src={"https://i.pravatar.cc/150?img=1"} //Placeholder img
+                alt={comment.name}
+              />
+              <CommentContent>
+                <strong>{comment.name}</strong>
+                <p>{comment.content}</p>
+              </CommentContent>
+            </Comment>
+          ))}
       </CommentList>
 
       {user && (

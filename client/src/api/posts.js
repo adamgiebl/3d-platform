@@ -107,7 +107,7 @@ export const fetchUserPosts = async (userId) => {
   }
 };
 
-export const fetchPostsByTag = async (tag) => {
+export const fetchPostsPerTag = async (tag) => {
   try {
     const response = await fetch(`${API_URL}/posts/tag/${tag}`, {
       credentials: "include",
@@ -118,7 +118,7 @@ export const fetchPostsByTag = async (tag) => {
     }
 
     const { posts } = await response.json();
-    return { posts };
+    return posts;
   } catch (error) {
     console.error("Error fetching posts by tag:", error);
     throw error;
