@@ -56,7 +56,7 @@ const Tag = styled(Link)`
 
   &:hover {
     background: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.colors.textOnPrimary};
+    color: ${({ theme }) => theme.colors.background};
   }
 `;
 
@@ -179,6 +179,6 @@ function PostCard({ post, onLike, onComment, isLoading }) {
       {showComments && <CommentSection post={post} onComment={onComment} />}
     </Card>
   );
-};
+}
 
 export default PostCard;
