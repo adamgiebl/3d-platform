@@ -1,6 +1,9 @@
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Stage, useGLTF } from "@react-three/drei";
+import { OrbitControls, Stage } from "@react-three/drei";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { useLoader } from "@react-three/fiber";
+import * as THREE from "three";
 import styled from "styled-components";
 import React from "react";
 
@@ -38,14 +41,40 @@ const ErrorContainer = styled(LoadingContainer)`
 `;
 
 function Model({ url, onError }) {
-  const gltf = useGLTF(url);
+  const gltf = useLoader(GLTFLoader, url);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup when component unmounts
+      if (gltf) {
+        if (gltf.scene) {
+          gltf.scene.traverse((object) => {
+            if (object.isMesh) {
+              if (object.geometry) {
+                object.geometry.dispose();
+              }
+              if (object.material) {
+                if (Array.isArray(object.material)) {
+                  object.material.forEach((material) => material.dispose());
+                } else {
+                  object.material.dispose();
+                }
+              }
+            }
+          });
+        }
+      }
+    };
+  }, [gltf]);
 
   if (!gltf || !gltf.scene) {
     onError(new Error("Invalid model data"));
     return null;
   }
 
-  return <primitive object={gltf.scene} />;
+  // Create a clone of the scene to prevent sharing between instances
+  const clonedScene = gltf.scene.clone(true);
+  return <primitive object={clonedScene} />;
 }
 
 function ModelViewer({ url }) {
@@ -71,6 +100,12 @@ function ModelViewer({ url }) {
         camera={{
           fov: 45,
         }}
+        gl={{
+          preserveDrawingBuffer: true,
+          antialias: true,
+          powerPreference: "high-performance",
+        }}
+        dpr={[1, 2]}
       >
         <Suspense fallback={null}>
           <Stage intensity={0.6}>
